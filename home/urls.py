@@ -1,10 +1,8 @@
-from django.contrib import admin
-from django.urls import path, include
-from .views import home, gallery, reviews, booking
+from django.urls import path
+from .views import home, gallery, reviews
 
 urlpatterns = [
     path("", home, name="home"),
     path('gallery', gallery, name='gallery'),
     path('reviews', reviews, name='reviews'),
-    # path('booking', booking, name='booking')
 ]

@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 import datetime
 from .forms import AppointmentForm
 from django.contrib import messages
+import stripe
+from .models import Appointment
+from django.conf import settings
 
 # Create your views here.
 def booking(request):
@@ -40,3 +43,47 @@ def booking(request):
         'max_date': max_date.isoformat(),
     }
     return render(request, 'booking/booking.html', context)
+
+
+def stripe_payment(request):
+    """Stripe payment page"""
+    try:
+        appointment_id = request.session.get('appointment_id')
+        appointment = Appointment.objects.get(id=appointment_id)
+        
+        if request.method == 'POST':
+            try:
+                # Create payment intent
+                intent = stripe.PaymentIntent.create(
+                    amount=int(appointment.amount * 100),  # Convert to cents
+                    currency='usd',
+                    metadata={
+                        'appointment_id': appointment.id,
+                        'customer_email': appointment.email,
+                    }
+                )
+                
+                appointment.stripe_payment_intent_id = intent.id
+                appointment.payment_status = 'pending'
+                appointment.save()
+                
+                context = {
+                    'appointment': appointment,
+                    'client_secret': intent.client_secret,
+                    'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
+                    'amount': appointment.amount,
+                }
+                return render(request, 'booking/stripe_payment.html', context)
+            except stripe.error.StripeError as e:
+                messages.error(request, f'Payment error: {str(e)}')
+                return redirect('booking')
+        
+        context = {
+            'appointment': appointment,
+            'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
+        }
+        return render(request, 'booking/stripe_payment.html', context)
+    except Appointment.DoesNotExist:
+        messages.error(request, 'Appointment not found.')
+        return redirect('booking')
+    

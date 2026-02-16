@@ -10,6 +10,3 @@ def gallery(request):
 
 def reviews(request):
     return render(request, 'home/reviews.html', {'reviews': Review.objects.all()})
-
-def booking(request):
-    return render(request, 'home/booking.html')
