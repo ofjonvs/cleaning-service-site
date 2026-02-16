@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Appointment - Our Service{% endblock %}
+
+{% block header %}
+<header>
+    <h1>Book an Appointment</h1>
+    <p>Schedule a time that works for you</p>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📅 Appointment Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="bookingForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="id_name" class="form-label">Full Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <small class="text-danger">{{ form.name.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="id_email" class="form-label">Email Address *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <small class="text-danger">{{ form.email.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="id_phone" class="form-label">Phone Number *</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <small class="text-danger">{{ form.phone.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="id_appointment_date" class="form-label">Date & Time *</label>
+                                {{ form.appointment_date }}
+                                {% if form.appointment_date.errors %}
+                                    <small class="text-danger">{{ form.appointment_date.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="id_notes" class="form-label">Additional Notes (Optional)</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <small class="text-danger">{{ form.notes.errors }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="id_amount" class="form-label">Amount ($)</label>
+                        {{ form.amount }}
+                        <small class="text-muted">Set by admin (0.00 = no charge)</small>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="form-label">Payment Option</label>
+                        <div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_option" id="skipPayment" value="skip" checked>
+                                <label class="form-check-label" for="skipPayment">
+                                    Skip Payment for Now
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_option" id="payWithStripe" value="pay">
+                                <label class="form-check-label" for="payWithStripe">
+                                    Pay Now with Stripe
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Book Appointment</button>
+                        <a href="{% url 'home' %}" class="btn btn-outline-primary btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <h5>What to expect:</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">✓ Quick confirmation via email</li>
+                    <li class="list-group-item">✓ Professional and friendly service</li>
+                    <li class="list-group-item">✓ Flexible rescheduling options</li>
+                    <li class="list-group-item">✓ Exceptional customer support</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

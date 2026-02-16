@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Gallery - Our Service{% endblock %}
+
+{% block header %}
+<header>
+    <h1>Gallery</h1>
+    <p>Explore our work and services</p>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% for image in gallery_images %}
+    <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card h-100 mb-4">
+            <img src="{{ image.image.url }}" alt="{{ image.title }}" class="card-img-top gallery-img">
+            <div class="card-body">
+                <h5 class="card-title">{{ image.title }}</h5>
+                <p class="card-text">{{ image.description }}</p>
+                <small class="text-muted">{{ image.uploaded_at|date:"M d, Y" }}</small>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info" role="alert">
+            <strong>Gallery is empty.</strong> Check back soon for new images!
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-12 text-center">
+        <a href="{% url 'home' %}" class="btn btn-outline-primary">← Back to Home</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Our Service{% endblock %}
+
+{% block header %}
+<header>
+    <h1>Welcome to Our Service</h1>
+    <p>Experience excellence with our team</p>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-md-6 mx-auto text-center mb-4">
+        <h2 class="section-title">Why Choose Us?</h2>
+        <p class="lead">We provide professional services with exceptional quality and customer care.</p>
+    </div>
+</div>
+
+<!-- Reviews Section -->
+<div class="row mb-5 g-4">
+    <div class="col-12">
+        <h2 class="section-title">Recent Reviews</h2>
+    </div>
+    {% for review in reviews %}
+    <div class="col-md-4">
+        <div class="card review-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ review.author }}</h5>
+                <p class="rating">{% for i in "x"|rjust:review.rating %}★{% endfor %}</p>
+                <p class="card-text">{{ review.text|truncatewords:30 }}</p>
+                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-muted">No reviews yet.</p>
+    </div>
+    {% endfor %}
+    <div class="col-12 text-center mt-4">
+        <a href="{% url 'reviews' %}" class="btn btn-primary">View All Reviews</a>
+    </div>
+</div>
+
+<!-- Gallery Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="section-title">Gallery</h2>
+    </div>
+    {% for image in gallery_images %}
+    <div class="col-md-4 col-sm-6">
+        <div class="card h-100">
+            <img src="{{ image.image.url }}" alt="{{ image.title }}" class="card-img-top gallery-img">
+            <div class="card-body">
+                <h5 class="card-title">{{ image.title }}</h5>
+                <p class="card-text">{{ image.description|truncatewords:15 }}</p>
+                <small class="text-muted">{{ image.uploaded_at|date:"M d, Y" }}</small>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-muted">No images in the gallery yet.</p>
+    </div>
+    {% endfor %}
+    <div class="col-12 text-center mt-4">
+        <a href="{% url 'gallery' %}" class="btn btn-primary">View Full Gallery</a>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="row mb-5">
+    <div class="col-md-6 mx-auto">
+        <div class="card" style="border-top: 4px solid var(--accent-color);">
+            <div class="card-body text-center">
+                <h4 class="card-title">Ready to Get Started?</h4>
+                <p class="card-text">Book your appointment with us today and experience our premium service.</p>
+                <a href="{% url 'booking' %}" class="btn btn-primary btn-lg mt-3">Book an Appointment</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
