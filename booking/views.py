@@ -65,14 +65,14 @@ def stripe_checkout(request, appointment_id):
         success_url=request.build_absolute_uri(
             reverse('success', args=[appointment.id])
         ),
-        cancel_url=request.build_absolute_uri(reverse('booking')),
+        cancel_url=request.build_absolute_uri(reverse('confirmation', args=[appointment.id])),
         metadata={
             'appointment_id': appointment.id,
         }
     )
 
     appointment.stripe_session_id = session.id
-    appointment.payment_status = 'pending'
+    appointment.payment_status = 'cancelled'
     appointment.save()
 
     return redirect(session.url)
@@ -98,8 +98,10 @@ def booking_confirmation(request, appointment_id):
     """Display booking confirmation"""
     try:
         appointment = Appointment.objects.get(id=appointment_id)
-        context = {'appointment': appointment}
-        return render(request, 'booking/booking_confirmation.html', context)
+        if appointment.payment_status == 'cancelled':
+            appointment.delete()
+            return render(request, 'booking/booking_cancellation.html')
+        return render(request, 'booking/booking_confirmation.html', {'appointment': appointment})
     except Appointment.DoesNotExist:
         messages.error(request, 'Appointment not found.')
         return redirect('booking')
