@@ -32,18 +32,6 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group mb-3">
-                                <label for="id_email" class="form-label">Email Address *</label>
-                                {{ form.email }}
-                                {% if form.email.errors %}
-                                    <small class="text-danger">{{ form.email.errors }}</small>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
                                 <label for="id_phone" class="form-label">Phone Number *</label>
                                 {{ form.phone }}
                                 {% if form.phone.errors %}
@@ -51,18 +39,34 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="id_appointment_date" class="form-label">Date & Time *</label>
-                                {{ form.appointment_date }}
-                                {% if form.appointment_date.errors %}
-                                    <small class="text-danger">{{ form.appointment_date.errors }}</small>
-                                {% endif %}
-                            </div>
-                        </div>
                     </div>
 
                     <div class="form-group mb-3">
+                        <label for="appointmentDate" class="form-label">Select Date *:</label>
+                        <input 
+                            type="date" 
+                            id="appointmentDate" 
+                            
+                            min="{{ min_date }}"
+                            max="{{ max_date }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="appointmentTime" class="form-label">Select Time *</label>
+                        <select id="appointmentTime" class="form-select" required disabled>
+                            <option value="">-- Select a date first --</option>
+                        </select>
+                        <small class="text-muted">Select a date to see available times</small>
+                    </div>
+
+                    {{ form.appointment_date }}
+                    {% if form.appointment_date.errors %}
+                        <small class="text-danger">{{ form.appointment_date.errors }}</small>
+                    {% endif %}
+
+                    <div class="form-group mb-4">
                         <label for="id_notes" class="form-label">Additional Notes (Optional)</label>
                         {{ form.notes }}
                         {% if form.notes.errors %}
@@ -71,24 +75,18 @@
                     </div>
 
                     <div class="form-group mb-4">
-                        <label for="id_amount" class="form-label">Amount ($)</label>
-                        {{ form.amount }}
-                        <small class="text-muted">Set by admin (0.00 = no charge)</small>
-                    </div>
-
-                    <div class="form-group mb-4">
                         <label class="form-label">Payment Option</label>
                         <div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="payment_option" id="skipPayment" value="skip" checked>
-                                <label class="form-check-label" for="skipPayment">
-                                    Skip Payment for Now
-                                </label>
-                            </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment_option" id="payWithStripe" value="pay">
+                                <input class="form-check-input" type="radio" name="payment_option" id="payWithStripe" value="pay" checked>
                                 <label class="form-check-label" for="payWithStripe">
                                     Pay Now with Stripe
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_option" id="skipPayment" value="skip">
+                                <label class="form-check-label" for="skipPayment">
+                                    Skip Payment for Now
                                 </label>
                             </div>
                         </div>
@@ -115,4 +113,58 @@
         </div>
     </div>
 </div>
+
+<script>
+    const dateInput = document.getElementById('appointmentDate');
+    const timeSelect = document.getElementById('appointmentTime');
+    const hiddenDateTimeInput = document.getElementById('id_appointment_date');
+    const form = document.getElementById('bookingForm');
+
+    // Fetch available slots when date changes
+    dateInput.addEventListener('change', async (e) => {
+        const selectedDate = e.target.value;
+        
+        if (!selectedDate) {
+            timeSelect.disabled = true;
+            timeSelect.innerHTML = '<option value="">-- Select a date first --</option>';
+            return;
+        }
+
+        try {
+            const response = await fetch(`{% url 'get_available_slots' %}?date=${selectedDate}`);
+            const data = await response.json();
+            
+            if (data.slots && data.slots.length > 0) {
+                timeSelect.innerHTML = '<option value="">-- Select a time --</option>';
+                data.slots.forEach(slot => {
+                    const option = document.createElement('option');
+                    option.value = slot.datetime;
+                    option.textContent = slot.time;
+                    timeSelect.appendChild(option);
+                });
+                timeSelect.disabled = false;
+            } else {
+                timeSelect.innerHTML = '<option value="">No available times for this date</option>';
+                timeSelect.disabled = true;
+            }
+        } catch (error) {
+            console.error('Error fetching slots:', error);
+            timeSelect.innerHTML = '<option value="">Error loading times</option>';
+            timeSelect.disabled = true;
+        }
+    });
+
+    // Update hidden datetime input when time is selected
+    timeSelect.addEventListener('change', (e) => {
+        hiddenDateTimeInput.value = e.target.value;
+    });
+
+    // Validate that time is selected before submitting
+    form.addEventListener('submit', (e) => {
+        if (!hiddenDateTimeInput.value) {
+            e.preventDefault();
+            alert('Please select both date and time');
+        }
+    });
+</script>
 {% endblock %}

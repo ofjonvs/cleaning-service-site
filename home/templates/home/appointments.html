@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointments - Our Service{% endblock %}
+
+{% block header %}
+<header>
+    <h1>Appointments</h1>
+    <p>View all bookings and manage appointments</p>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12">
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📋 All Appointments</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td><strong>{{ appointment.name }}</strong></td>
+                            <td>{{ appointment.appointment_date|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <span class="badge bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'pending' %}warning{% elif appointment.status == 'completed' %}info{% else %}danger{% endif %}">
+                                    {{ appointment.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if appointment.payment_status == 'paid' %}success{% elif appointment.payment_status == 'skipped' %}secondary{% elif appointment.payment_status == 'pending' %}warning{% else %}danger{% endif %}">
+                                    {{ appointment.get_payment_status_display }}
+                                </span>
+                            </td>
+
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                No appointments found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{% url 'home' %}" class="btn btn-outline-primary">Back to Home</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 import datetime
 from .forms import AppointmentForm
 from django.contrib import messages
 import stripe
-from .models import Appointment
+from .models import Appointment, Availability
 from django.conf import settings
+from django.urls import reverse
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # Create your views here.
 def booking(request):
@@ -22,19 +28,20 @@ def booking(request):
             payment_option = request.POST.get('payment_option', 'skip')
             
             if payment_option == 'pay':
-                return redirect('stripe_payment')
+                request.session['appointment_id'] = appointment.id
+                return redirect('checkout', appointment_id=appointment.id)
             else:
                 # Mark as payment skipped
                 appointment.payment_status = 'skipped'
-                appointment.status = 'confirmed'
+                appointment.status = 'pending'
                 appointment.save()
-                messages.success(request, f'✓ Appointment booked successfully! We will confirm via email shortly.')
-                # return redirect('booking_confirmation', appointment_id=appointment.id)
+                messages.success(request, f'✓ Appointment booked successfully')
+                return redirect('confirmation', appointment_id=appointment.id)
     else:
         form = AppointmentForm()
     
     # Get min and max dates (allow bookings 7 days in advance)
-    min_date = datetime.datetime.now().date()
+    min_date = datetime.datetime.now().date() + datetime.timedelta(days=1)
     max_date = min_date + datetime.timedelta(days=7)
     
     context = {
@@ -45,45 +52,91 @@ def booking(request):
     return render(request, 'booking/booking.html', context)
 
 
-def stripe_payment(request):
-    """Stripe payment page"""
+def stripe_checkout(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    session = stripe.checkout.Session.create(
+        mode='payment',
+        payment_method_types=['card'],
+        line_items=[{
+            'price': settings.APPOINTMENT_PRICE_ID,
+            'quantity': 1,
+        }],
+        success_url=request.build_absolute_uri(
+            reverse('success', args=[appointment.id])
+        ),
+        cancel_url=request.build_absolute_uri(reverse('booking')),
+        metadata={
+            'appointment_id': appointment.id,
+        }
+    )
+
+    appointment.stripe_session_id = session.id
+    appointment.payment_status = 'pending'
+    appointment.save()
+
+    return redirect(session.url)
+
+def payment_success(request, appointment_id):
+    """Handle successful Stripe payment"""
     try:
-        appointment_id = request.session.get('appointment_id')
         appointment = Appointment.objects.get(id=appointment_id)
         
-        if request.method == 'POST':
-            try:
-                # Create payment intent
-                intent = stripe.PaymentIntent.create(
-                    amount=int(appointment.amount * 100),  # Convert to cents
-                    currency='usd',
-                    metadata={
-                        'appointment_id': appointment.id,
-                        'customer_email': appointment.email,
-                    }
-                )
-                
-                appointment.stripe_payment_intent_id = intent.id
-                appointment.payment_status = 'pending'
-                appointment.save()
-                
-                context = {
-                    'appointment': appointment,
-                    'client_secret': intent.client_secret,
-                    'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
-                    'amount': appointment.amount,
-                }
-                return render(request, 'booking/stripe_payment.html', context)
-            except stripe.error.StripeError as e:
-                messages.error(request, f'Payment error: {str(e)}')
-                return redirect('booking')
-        
-        context = {
-            'appointment': appointment,
-            'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
-        }
-        return render(request, 'booking/stripe_payment.html', context)
+        if appointment.payment_status == 'pending':
+            appointment.payment_status = 'paid'
+            appointment.status = 'confirmed'
+            appointment.save()
+            
+            messages.success(request, '✓ Payment successful! Your appointment is confirmed.')
+    except Appointment.DoesNotExist:
+        messages.error(request, 'Appointment not found.')
+    
+    return redirect('confirmation', appointment_id=appointment_id)
+
+
+def booking_confirmation(request, appointment_id):
+    """Display booking confirmation"""
+    try:
+        appointment = Appointment.objects.get(id=appointment_id)
+        context = {'appointment': appointment}
+        return render(request, 'booking/booking_confirmation.html', context)
     except Appointment.DoesNotExist:
         messages.error(request, 'Appointment not found.')
         return redirect('booking')
     
+@require_GET
+def get_available_slots(request):
+    """AJAX endpoint to get available slots for a given date"""
+
+    if not (date_str:=request.GET.get('date')):
+        return JsonResponse({'slots': []})
+    
+    try:
+        date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+
+        availabilities = Availability.objects.filter(
+            day_of_week=date.weekday(),
+            is_active=True
+        )
+        
+        slots = []
+        for availability in availabilities:
+            start = datetime.datetime.combine(date, availability.start_time)
+            end = datetime.datetime.combine(date, availability.end_time)
+            current = start
+            
+            while current < end:
+                if not Appointment.objects.filter(appointment_date=current, status__in=['confirmed', 'completed']).exists():
+                    slots.append({
+                        'time': current.strftime('%I:%M %p').lstrip('0'),
+                        'datetime': current.isoformat()
+                    })
+                    current += datetime.timedelta(minutes=30)    
+                else:
+                    for _ in (range(min(len(slots), 3))):
+                        slots.pop()
+                    current += datetime.timedelta(minutes=60)
+        
+        return JsonResponse({'slots': slots})
+    except:
+        return JsonResponse({'slots': []})

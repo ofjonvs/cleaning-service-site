@@ -1,7 +1,10 @@
 from django.urls import path
-from . import views
-from .views import booking
+from .views import *
 
 urlpatterns = [
     path("", booking, name="booking"),
+    path('checkout/<int:appointment_id>/', stripe_checkout, name='checkout'),
+    path('success/<int:appointment_id>/', payment_success, name='success'),
+    path('confirmation/<int:appointment_id>/', booking_confirmation, name='confirmation'),
+    path('get-available-slots', get_available_slots, name='get_available_slots')
 ]
