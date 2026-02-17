@@ -6,7 +6,21 @@ from django.utils import timezone
 # Create your views here.
 
 def home(request):
-    return render(request, "home/home.html", {'gallery_images': Gallery.objects.all()[:3], 'reviews': Review.objects.all()[:3]})
+    try:
+        gallery_images = Gallery.objects.all()[:3]
+        reviews = Review.objects.all()[:3]
+    except Exception:
+        gallery_images = []
+        reviews = []
+
+    return render(
+        request,
+        "home/home.html",
+        {
+            "gallery_images": gallery_images,
+            "reviews": reviews,
+        },
+    )
 
 def gallery(request):
     return render(request, 'home/gallery.html', {'gallery_images': Gallery.objects.all()})
