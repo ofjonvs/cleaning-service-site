@@ -3,6 +3,7 @@ from .models import Gallery, Review
 from booking.models import Appointment
 import datetime
 from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test
 # Create your views here.
 
 def home(request):
@@ -28,6 +29,8 @@ def gallery(request):
 def reviews(request):
     return render(request, 'home/reviews.html', {'reviews': Review.objects.all()})
 
+
+@user_passes_test(lambda u: u.is_superuser)
 def appointment_list(request):
     appointments = Appointment.objects.filter(
         appointment_date__gte=timezone.now()
