@@ -29,7 +29,6 @@ def gallery(request):
 def reviews(request):
     return render(request, 'home/reviews.html', {'reviews': Review.objects.all()})
 
-
 @user_passes_test(lambda u: u.is_superuser)
 def appointment_list(request):
     appointments = Appointment.objects.filter(
