@@ -19,5 +19,3 @@ staticfiles/
 # IDE
 .vscode/
 .idea/
-
-**/foldername/
