@@ -14,13 +14,41 @@ class Review(models.Model):
     def __str__(self):
         return f"{self.author} - {self.rating}★"
 
+    
+class Product(models.Model):
+    """Service products for booking (e.g., Basic Clean, Deep Clean)"""
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    duration_minutes = models.IntegerField(help_text="Estimated duration in minutes")
+    stripe_price_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Stripe price ID (e.g., price_1234...)"
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['price']
+
+    def __str__(self):
+        return self.name
+
 class Gallery(models.Model):
-    title = models.CharField(max_length=200, null=True, blank=True)
     image = models.ImageField(upload_to='gallery/')
-    description = models.TextField(blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     review = models.ForeignKey(
         Review,
+        related_name='images',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    product = models.ForeignKey(
+        Product,
         related_name='images',
         on_delete=models.CASCADE,
         blank=True,
@@ -32,4 +60,4 @@ class Gallery(models.Model):
         verbose_name_plural = "Gallery"
     
     def __str__(self):
-        return self.title or f'image {self.pk}'
+        return f'image {self.pk}'

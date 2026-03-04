@@ -1,83 +1,164 @@
-{% extends 'base.html' %}
-
-{% block title %}Lisseth Service{% endblock %}
-
-{% block header %}
-<header>
-    <h1>Welcome to Lisseth Service</h1>
+{% extends 'base.html' %} {% block title %}Lisseth Service{% endblock %} {%
+block header %}
+<header class="hero text-center">
+  <div class="container">
+    <h1 class="display-5 fw-bold">Welcome to Lisseth Service</h1>
+    <p class="lead subtitle">
+      Premium cleaning tailored to your home — reliable, professional, and
+      caring.
+    </p>
+    <div class="mt-4">
+      <a href="{% url 'booking' %}" class="btn btn-primary btn-lg me-2"
+        >Book Now</a
+      >
+    </div>
+  </div>
 </header>
-{% endblock %}
-
-{% block content %}
-<div class="row mb-5">
+{% endblock %} {% block content %}
+<!-- <div class="row mb-5">
     <div class="col-md-6 mx-auto text-center mb-4">
         <h2 class="section-title">Why Choose Us?</h2>
         <p class="lead">We deliver consistent, dependable cleaning so you can enjoy a fresh, stress-free space.</p>
     </div>
-</div>
+</div> -->
 
 <!-- Reviews Section -->
 <div class="row mb-5 g-4">
-    <div class="col-12">
-        <h2 class="section-title">Recent Reviews</h2>
-    </div>
-    {% for review in reviews %}
-    <div class="col-md-4">
-        <div class="card review-card h-100">
-            <div class="card-body">
-                <h5 class="card-title">{{ review.author }}</h5>
-                <p class="rating">{% for i in "x"|rjust:review.rating %}★{% endfor %}</p>
-                <p class="card-text">{{ review.text|truncatewords:30 }}</p>
-                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
-            </div>
+  <div class="col-12">
+    <h2 class="section-title">Recent Reviews</h2>
+  </div>
+  {% for review in reviews %}
+  <div class="col-md-4">
+    <div class="card review-card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h5 class="card-title">{{ review.author }}</h5>
+            <p class="rating">
+              {% for i in "x"|rjust:review.rating %}★{% endfor %}
+            </p>
+          </div>
+          <small class="text-muted"
+            >{{ review.created_at|date:"M d, Y" }}</small
+          >
         </div>
+        <p class="card-text">{{ review.text|truncatewords:35 }}</p>
+
+        <!-- Review images (show up to 3) -->
+        {% if review.images.all %}
+        <div class="review-images">
+          {% for img in review.images.all|slice:":3" %}
+          <img
+            src="{{ img.image.url }}"
+            alt="Review image"
+            class="img-fluid rounded"
+          />
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
     </div>
-    {% empty %}
-    <div class="col-12">
-        <p class="text-muted">No reviews yet.</p>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <p class="text-muted">No reviews yet.</p>
+  </div>
+  {% endfor %}
+  <div class="col-12 text-center mt-4">
+    <a href="{% url 'reviews' %}" class="btn btn-primary">View All Reviews</a>
+  </div>
+</div>
+
+<!-- Service Products / Booking Options -->
+<div class="row mb-5">
+  <div class="col-12">
+    <h2 class="section-title">Our Services</h2>
+  </div>
+
+  <div class="col-12 booking-options">
+    {% for product in products %}
+    <div class="booking-card">
+      <div class="card-body">
+        <h5 class="mb-1">{{ product.name }}</h5>
+        <p class="mb-2 text-muted">
+          {{ product.description|truncatewords:15 }}
+        </p>
+
+        <!-- extra pictures attached via Gallery -->
+        <!-- {% if product.images.all %}
+            <div class="product-images">
+                {% for img in product.images.all|slice:":3" %}
+                <img src="{{ img.image.url }}" alt="{{ product.name }} image">
+                {% endfor %}
+            </div>
+            {% endif %} -->
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <span class="price">${{ product.price }}</span>
+          <span class="badge bg-secondary"
+            >{{ product.duration_minutes }} min</span
+          >
+        </div>
+      </div>
     </div>
     {% endfor %}
-    <div class="col-12 text-center mt-4">
-        <a href="{% url 'reviews' %}" class="btn btn-primary">View All Reviews</a>
-    </div>
+  </div>
+
+  {% if not products %}
+  <div class="col-12">
+    <p class="text-muted text-center">No services available yet.</p>
+  </div>
+  {% endif %}
+  <div class="col-12 text-center mt-4">
+    <a class="btn btn-primary">View Products</a>
+  </div>
 </div>
 
 <!-- Gallery Section -->
 <div class="row mb-5">
-    <div class="col-12">
-        <h2 class="section-title">Gallery</h2>
+  <div class="col-12">
+    <h2 class="section-title">Gallery</h2>
+  </div>
+  {% for image in gallery_images %}
+  <div class="col-md-4 col-sm-6">
+    <div class="card h-100">
+      <img
+        src="{{ image.image.url }}"
+        alt="{{ image.title }}"
+        class="card-img-top gallery-img"
+      />
+      <div class="card-body">
+        <h5 class="card-title">{{ image.title }}</h5>
+        <p class="card-text">{{ image.description|truncatewords:15 }}</p>
+        <small class="text-muted">{{ image.uploaded_at|date:"M d, Y" }}</small>
+      </div>
     </div>
-    {% for image in gallery_images %}
-    <div class="col-md-4 col-sm-6">
-        <div class="card h-100">
-            <img src="{{ image.image.url }}" alt="{{ image.title }}" class="card-img-top gallery-img">
-            <div class="card-body">
-                <h5 class="card-title">{{ image.title }}</h5>
-                <p class="card-text">{{ image.description|truncatewords:15 }}</p>
-                <small class="text-muted">{{ image.uploaded_at|date:"M d, Y" }}</small>
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <div class="col-12">
-        <p class="text-muted">No images in the gallery yet.</p>
-    </div>
-    {% endfor %}
-    <div class="col-12 text-center mt-4">
-        <a href="{% url 'gallery' %}" class="btn btn-primary">View Full Gallery</a>
-    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <p class="text-muted">No images in the gallery yet.</p>
+  </div>
+  {% endfor %}
+  <div class="col-12 text-center mt-4">
+    <a href="{% url 'gallery' %}" class="btn btn-primary">View Full Gallery</a>
+  </div>
 </div>
 
 <!-- CTA Section -->
 <div class="row mb-5">
-    <div class="col-md-6 mx-auto">
-        <div class="card" style="border-top: 4px solid var(--accent-color);">
-            <div class="card-body text-center">
-                <h4 class="card-title">Ready to Get Started?</h4>
-                <p class="card-text">Book your appointment with us today and experience our premium service.</p>
-                <a href="{% url 'booking' %}" class="btn btn-primary btn-lg mt-3">Book an Appointment</a>
-            </div>
-        </div>
+  <div class="col-md-6 mx-auto">
+    <div class="card" style="border-top: 4px solid var(--accent-color)">
+      <div class="card-body text-center">
+        <h4 class="card-title">Ready to Get Started?</h4>
+        <p class="card-text">
+          Book your appointment with us today and experience our premium
+          service.
+        </p>
+        <a href="{% url 'booking' %}" class="btn btn-primary btn-lg mt-3"
+          >Book an Appointment</a
+        >
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}

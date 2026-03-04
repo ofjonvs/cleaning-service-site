@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Gallery, Review
+from .models import Gallery, Review, Product
 from booking.models import Appointment
 import datetime
 from django.utils import timezone
@@ -10,6 +10,7 @@ def home(request):
     try:
         gallery_images = Gallery.objects.all()[:3]
         reviews = Review.objects.all()[:3]
+        products = Product.objects.all()
     except Exception:
         gallery_images = []
         reviews = []
@@ -20,6 +21,7 @@ def home(request):
         {
             "gallery_images": gallery_images,
             "reviews": reviews,
+            "products": products
         },
     )
 
