@@ -105,8 +105,15 @@ def payment_failure(request, appointment_id):
 
 def booking_confirmation(request, appointment_id):
     """Display booking confirmation"""
+
+    session_appointment_id = request.session.get('appointment_id')
+    
+    if not session_appointment_id or int(session_appointment_id) != int(appointment_id):
+        messages.error(request, 'You do not have permission to view this page.')
+        return redirect('booking')
     try:
         appointment = Appointment.objects.get(id=appointment_id)
+        del request.session['appointment_id']
         return render(request, 'booking/booking_confirmation.html', {'appointment': appointment})
     except Appointment.DoesNotExist:
         messages.error(request, 'Appointment not found.')
