@@ -35,7 +35,7 @@ def booking(request):
                 appointment.payment_status = 'skipped'
                 appointment.status = 'pending'
                 appointment.save()
-                messages.success(request, f'✓ Appointment booked successfully')
+                messages.warning(request, f'Appointment Pending')
                 return redirect('confirmation', appointment_id=appointment.id)
     else:
         form = AppointmentForm()
@@ -59,7 +59,7 @@ def stripe_checkout(request, appointment_id):
         mode='payment',
         payment_method_types=['card'],
         line_items=[{
-            'price': settings.APPOINTMENT_PRICE_ID,
+            'price': appointment.product.stripe_price_id,
             'quantity': 1,
         }],
         success_url=request.build_absolute_uri(

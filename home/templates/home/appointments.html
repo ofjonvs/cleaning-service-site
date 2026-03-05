@@ -23,8 +23,10 @@
                         <tr>
                             <th>Name</th>
                             <th>Date & Time</th>
+                            <th>Service</th>
                             <th>Status</th>
                             <th>Payment</th>
+                            <th>View Appointment</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -32,6 +34,7 @@
                         <tr>
                             <td><strong>{{ appointment.name }}</strong></td>
                             <td>{{ appointment.appointment_date|date:"M d, Y H:i" }}</td>
+                            <td>{{ appointment.product.name }}</td>
                             <td>
                                 <span class="badge bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'pending' %}warning{% elif appointment.status == 'completed' %}info{% else %}danger{% endif %}">
                                     {{ appointment.get_status_display }}
@@ -42,6 +45,7 @@
                                     {{ appointment.get_payment_status_display }}
                                 </span>
                             </td>
+                            <td><a href="{% url 'appointment_detail' appointment.id %}">View Details</a></td>
 
                         </tr>
                         {% empty %}

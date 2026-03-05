@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from home.models import Product
 
 class Availability(models.Model):
     """Stores available time slots for bookings"""
@@ -53,6 +54,7 @@ class Appointment(models.Model):
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, help_text="Select the service/product for this appointment", null=True, blank=True)
     
     class Meta:
         ordering = ['appointment_date']

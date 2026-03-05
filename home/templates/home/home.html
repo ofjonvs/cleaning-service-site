@@ -76,32 +76,32 @@
     <h2 class="section-title">Our Services</h2>
   </div>
 
-  <div class="col-4 booking-options">
+  <div class="booking-options">
     {% for product in products %}
-    <div class="booking-card">
-      <div class="card-body">
-        <h5 class="mb-1">{{ product.name }}</h5>
-        <p class="mb-2 text-muted">
-          {{ product.description|truncatewords:15 }}
-        </p>
-
-        <!-- extra pictures attached via Gallery -->
-        <!-- {% if product.images.all %}
-            <div class="product-images">
-                {% for img in product.images.all|slice:":3" %}
-                <img src="{{ img.image.url }}" alt="{{ product.name }} image">
-                {% endfor %}
-            </div>
-            {% endif %} -->
-
-        <div class="d-flex justify-content-between align-items-center mt-3">
-          <span class="price">${{ product.price }}</span>
-          <span class="badge bg-secondary"
+    <a href="{% url 'product_detail' product.id %}" class="booking-card col-3">
+        <div class="card-body">
+          <h5 class="mb-1">{{ product.name }}</h5>
+          <p class="mb-2 text-muted">
+            {{ product.description|truncatewords:15 }}
+          </p>
+          
+          <!-- extra pictures attached via Gallery -->
+          <!-- {% if product.images.all %}
+          <div class="product-images">
+            {% for img in product.images.all|slice:":3" %}
+            <img src="{{ img.image.url }}" alt="{{ product.name }} image">
+            {% endfor %}
+          </div>
+          {% endif %} -->
+          
+          <div class="d-flex justify-content-between align-items-center card-footer-row">
+            <span class="price">${{ product.price }}</span>
+            <span class="badge bg-secondary"
             >{{ product.duration_minutes }} min</span
-          >
+            >
+          </div>
         </div>
-      </div>
-    </div>
+    </a>
     {% endfor %}
   </div>
 

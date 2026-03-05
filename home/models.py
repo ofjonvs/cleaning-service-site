@@ -20,7 +20,7 @@ class Product(models.Model):
     """Service products for booking (e.g., Basic Clean, Deep Clean)"""
     name = models.CharField(max_length=200)
     description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     duration_minutes = models.IntegerField(help_text="Estimated duration in minutes")
     stripe_price_id = models.CharField(
         max_length=255,

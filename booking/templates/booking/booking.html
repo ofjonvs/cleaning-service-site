@@ -42,6 +42,14 @@
                     </div>
 
                     <div class="form-group mb-3">
+                        <label for="id_product" class="form-label">Service *</label>
+                        {{ form.product }}
+                        {% if form.product.errors %}
+                            <small class="text-danger">{{ form.product.errors }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-3">
                         <label for="appointmentDate" class="form-label">Select Date *:</label>
                         <input 
                             type="date" 
@@ -97,18 +105,6 @@
                         <a href="{% url 'home' %}" class="btn btn-outline-primary btn-lg">Cancel</a>
                     </div>
                 </form>
-            </div>
-        </div>
-
-        <div class="row mt-5">
-            <div class="col-12">
-                <h5>What to expect:</h5>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">✓ Quick confirmation via email</li>
-                    <li class="list-group-item">✓ Professional and friendly service</li>
-                    <li class="list-group-item">✓ Flexible rescheduling options</li>
-                    <li class="list-group-item">✓ Exceptional customer support</li>
-                </ul>
             </div>
         </div>
     </div>
