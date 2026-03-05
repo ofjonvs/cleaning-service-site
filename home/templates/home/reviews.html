@@ -1,55 +1,61 @@
-{% extends 'base.html' %}
-
-{% block title %}Reviews - Our Service{% endblock %}
-
+{% extends 'base.html' %} {% block title %}Reviews - Our Service{% endblock %}
 {% block header %}
 <header>
-    <h1>Customer Reviews</h1>
-    <p>See what our customers have to say</p>
+  <h1>Customer Reviews</h1>
+  <p>See what our customers have to say</p>
 </header>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="row">
-    <div class="col-lg-8 mx-auto">
-        {% for review in reviews %}
-        <div class="card review-card mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h5 class="card-title">{{ review.author }}</h5>
-                        <p class="rating">{% for i in "x"|rjust:review.rating %}★{% endfor %}</p>
-                    </div>
-                    <small class="text-muted">{{ review.created_at|date:"M d, Y H:i" }}</small>
-                </div>
-                <p class="card-text">{{ review.text }}</p>
+  <div class="col-lg-8 mx-auto">
+    {% for review in reviews %}
+    <div class="card review-card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h5 class="card-title">{{ review.author }}</h5>
+            <p class="rating">
+              {% for i in "x"|rjust:review.rating %}★{% endfor %}
+            </p>
+          </div>
+          <small class="text-muted"
+            >{{ review.created_at|date:"M d, Y g:i A" }}</small
+          >
+        </div>
+        <p class="card-text">{{ review.text }}</p>
 
-                <!-- All review images -->
-                {% if review.images.all %}
-                <div class="mt-4">
-                    <h6 class="text-muted">📸 Images</h6>
-                    <div class="row g-2">
-                        {% for img in review.images.all %}
-                        <div class="col-md-4 col-sm-6">
-                            <img src="{{ img.image.url }}" alt="Review image" class="img-fluid rounded" style="height: 150px; object-fit: cover;">
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
+        <!-- All review images -->
+        {% if review.images.all %}
+        <div class="mt-4">
+          <h6 class="text-muted">📸 Images</h6>
+          <div class="row g-2">
+            {% for img in review.images.all %}
+            <div class="col-md-4 col-sm-6">
+              <img
+                src="{{ img.image.url }}"
+                alt="Review image"
+                class="img-fluid rounded"
+                style="height: 150px; object-fit: cover"
+              />
             </div>
+            {% endfor %}
+          </div>
         </div>
-        {% empty %}
-        <div class="alert alert-info" role="alert">
-            <strong>No reviews yet.</strong> Check back soon for customer reviews!
-        </div>
-        {% endfor %}
+        {% endif %}
+      </div>
     </div>
+    {% empty %}
+    <div class="alert alert-info" role="alert">
+      <strong>No reviews yet.</strong> Check back soon for customer reviews!
+    </div>
+    {% endfor %}
+  </div>
 </div>
 
 <div class="row mt-5">
-    <div class="col-12 text-center">
-        <a href="{% url 'home' %}" class="btn btn-outline-primary">← Back to Home</a>
-    </div>
+  <div class="col-12 text-center">
+    <a href="{% url 'home' %}" class="btn btn-outline-primary"
+      >← Back to Home</a
+    >
+  </div>
 </div>
 {% endblock %}
