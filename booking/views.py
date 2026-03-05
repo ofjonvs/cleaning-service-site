@@ -19,21 +19,22 @@ def booking(request):
         form = AppointmentForm(request.POST)
         if form.is_valid():
             appointment = form.save(commit=False)
-            appointment.save()
             
             # Store appointment ID in session for payment
             request.session['appointment_id'] = appointment.id
             
             # Check if user wants to pay or skip
             payment_option = request.POST.get('payment_option', 'skip')
-            
+            appointment.status = 'pending'
+
             if payment_option == 'pay':
+                appointment.payment_status = 'pending'
                 request.session['appointment_id'] = appointment.id
+                appointment.save()
                 return redirect('checkout', appointment_id=appointment.id)
             else:
                 # Mark as payment skipped
                 appointment.payment_status = 'skipped'
-                appointment.status = 'pending'
                 appointment.save()
                 messages.warning(request, f'Appointment Pending')
                 return redirect('confirmation', appointment_id=appointment.id)
@@ -65,16 +66,11 @@ def stripe_checkout(request, appointment_id):
         success_url=request.build_absolute_uri(
             reverse('success', args=[appointment.id])
         ),
-        cancel_url=request.build_absolute_uri(reverse('confirmation', args=[appointment.id])),
+        cancel_url=request.build_absolute_uri(reverse('failure', args=[appointment.id])),
         metadata={
             'appointment_id': appointment.id,
         }
     )
-
-    appointment.stripe_session_id = session.id
-    appointment.payment_status = 'cancelled'
-    appointment.save()
-
     return redirect(session.url)
 
 def payment_success(request, appointment_id):
@@ -93,14 +89,24 @@ def payment_success(request, appointment_id):
     
     return redirect('confirmation', appointment_id=appointment_id)
 
+def payment_failure(request, appointment_id):
+    try:
+        appointment = Appointment.objects.get(id=appointment_id)
+        
+        if appointment.payment_status == 'pending':
+            appointment.delete()
+            
+            messages.error(request, 'Appointment cancelled')
+    except Appointment.DoesNotExist:
+        messages.error(request, 'Appointment not found.')
+    
+    return render(request, 'booking/booking_cancellation.html')
+
 
 def booking_confirmation(request, appointment_id):
     """Display booking confirmation"""
     try:
         appointment = Appointment.objects.get(id=appointment_id)
-        if appointment.payment_status == 'cancelled':
-            appointment.delete()
-            return render(request, 'booking/booking_cancellation.html')
         return render(request, 'booking/booking_confirmation.html', {'appointment': appointment})
     except Appointment.DoesNotExist:
         messages.error(request, 'Appointment not found.')
