@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 # Create your models here.
     
@@ -38,7 +39,7 @@ class Product(models.Model):
         return self.name
 
 class Gallery(models.Model):
-    image = models.ImageField(upload_to='gallery/')
+    image = CloudinaryField('image', folder='gallery/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     review = models.ForeignKey(
         Review,

@@ -15,8 +15,6 @@ import os
 from dotenv import load_dotenv
 import dj_database_url
 import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
 load_dotenv()
 
@@ -39,7 +37,6 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
-    'cloudinary_storage',
     'cloudinary',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -52,17 +49,17 @@ INSTALLED_APPS = [
     "booking",
 ]
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
-}
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+#     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+#     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+# }
 
-cloudinary.config(
-    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-    api_key=os.getenv('CLOUDINARY_API_KEY'),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
-)
+# cloudinary.config(
+#     cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+#     api_key=os.getenv('CLOUDINARY_API_KEY'),
+#     api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+# )
 
 
 MIDDLEWARE = [
@@ -156,11 +153,17 @@ STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 USE_TZ = True
 TIME_ZONE = 'America/New_York'
 
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage", 
-    },
-}
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage", 
+#     },
+# }
+
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+)
