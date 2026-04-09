@@ -150,6 +150,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 APPOINTMENT_PRICE_ID = os.getenv("APPOINTMENT_PRICE_ID")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 
+GOOGLE_API_KEY = os.getenv("GOOGLE_API")
+
 USE_TZ = True
 TIME_ZONE = 'America/New_York'
 

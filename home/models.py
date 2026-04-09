@@ -15,28 +15,38 @@ class Review(models.Model):
     def __str__(self):
         return f"{self.author} - {self.rating}★"
 
-    
-class Product(models.Model):
-    """Service products for booking (e.g., Basic Clean, Deep Clean)"""
+class Service(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    duration_minutes = models.IntegerField(help_text="Estimated duration in minutes")
-    stripe_price_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        help_text="Stripe price ID (e.g., price_1234...)"
-    )
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['price']
 
     def __str__(self):
         return self.name
+    
+class Product(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='products')
+    size = models.CharField(max_length=10, choices=[(s, s.capitalize()) for s in ('small', 'medium', 'large')], default='small')
+    duration_minutes = models.IntegerField(help_text="Estimated duration in minutes")
+    stripe_price_id = models.CharField(
+        max_length=255,
+        help_text="Stripe price ID (e.g., price_1234...)"
+    )
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.service.name + ' - ' + self.size
+    
+class AddOns(models.Model):
+    name = models.CharField(max_length=30)
+    stripe_price_id = models.CharField(
+        max_length=255,
+        help_text="Stripe price ID (e.g., price_1234...)"
+    )
+    price = models.DecimalField(decimal_places=2, max_digits=5, help_text="Add on cost", blank=True, default=0)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name + ' - ' + str(self.price)
 
 class Gallery(models.Model):
     image = CloudinaryField('image', folder='gallery/')
