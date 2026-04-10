@@ -47,6 +47,11 @@ class AddOns(models.Model):
 
     def __str__(self):
         return self.name + ' - ' + str(self.price)
+    
+    def save(self, *args, **kwargs):
+        from .utils import getStripePrice
+        self.price = getStripePrice(self.stripe_price_id)
+        super(AddOns, self).save(*args, **kwargs)
 
 class Gallery(models.Model):
     image = CloudinaryField('image', folder='gallery/')
@@ -58,8 +63,8 @@ class Gallery(models.Model):
         blank=True,
         null=True
     )
-    product = models.ForeignKey(
-        Product,
+    service = models.ForeignKey(
+        Service,
         related_name='images',
         on_delete=models.CASCADE,
         blank=True,

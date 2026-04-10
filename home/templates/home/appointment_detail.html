@@ -53,19 +53,21 @@ appointment.id }}{% endblock %} {% block header %}
               <tr>
                 <td><strong>Service:</strong></td>
                 <td>
-                  {% if appointment.product %}
-                  <a href="{% url 'product_detail' appointment.product.id %}"
-                    >{{ appointment.product.name }}</a
-                  >
-                  {% else %}
-                  <em>Not specified</em>
-                  {% endif %}
+                  <a href="{% url 'product_detail' appointment.product.service.id %}"
+                    >{{ appointment.product }}</a
+                  >     
                 </td>
               </tr>
               <tr>
                 <td><strong>Status:</strong></td>
                 <td>{{ appointment.get_status_display }}</td>
               </tr>
+              {% if appointment.addons %}
+              <tr>
+                <td><strong>Add-ons:</strong></td>
+                <td>{{ appointment.addons_str }}</td>
+              </tr>
+              {% endif %}
               {% if appointment.notes %}
               <tr>
                 <td><strong>Notes:</strong></td>
@@ -92,10 +94,6 @@ appointment.id }}{% endblock %} {% block header %}
                     {{ appointment.get_payment_status_display }}
                   </span>
                 </td>
-              </tr>
-              <tr>
-                <td><strong>Amount:</strong></td>
-                <td>${{ appointment.amount|default:"0.00" }}</td>
               </tr>
               {% if appointment.stripe_payment_intent_id %}
               <tr>
@@ -142,11 +140,11 @@ appointment.id }}{% endblock %} {% block header %}
             <table class="table table-sm">
               <tr>
                 <td><strong>Created:</strong></td>
-                <td>{{ appointment.created_at|date:"M d, Y g:i A:s" }}</td>
+                <td>{{ appointment.created_at|date:"M d, Y g:i:s A" }}</td>
               </tr>
               <tr>
                 <td><strong>Last Updated:</strong></td>
-                <td>{{ appointment.updated_at|date:"M d, Y g:i A:s" }}</td>
+                <td>{{ appointment.updated_at|date:"M d, Y g:i:s A" }}</td>
               </tr>
             </table>
           </div>

@@ -18,6 +18,7 @@
               <th>Name</th>
               <th>Date & Time</th>
               <th>Service</th>
+              <th>Add-Ons</th>
               <th>Status</th>
               <th>Payment</th>
               <th>View Appointment</th>
@@ -28,7 +29,8 @@
             <tr>
               <td><strong>{{ appointment.name }}</strong></td>
               <td>{{ appointment.appointment_date|date:"M d, Y g:i A" }}</td>
-              <td>{{ appointment.product.name }}</td>
+              <td>{{ appointment.product }}</td>
+              <td>{{ appointment.addons_str }}</td>
               <td>
                 <span
                   class="badge bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'pending' %}warning{% elif appointment.status == 'completed' %}info{% else %}danger{% endif %}"

@@ -6,7 +6,7 @@ import stripe
 from .models import Appointment, Availability
 from django.conf import settings
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_GET
 from home.models import Product
 
@@ -68,7 +68,7 @@ def stripe_checkout(request, appointment_id):
         }, *({'price': addon.stripe_price_id, 'quantity': 1} for addon in appointment.addons.all())],
         success_url=request.build_absolute_uri(
             reverse('success', args=[appointment.id])
-        ),
+        )+ '?session_id={CHECKOUT_SESSION_ID}',
         cancel_url=request.build_absolute_uri(reverse('failure', args=[appointment.id])),
         metadata={
             'appointment_id': appointment.id,
@@ -78,10 +78,15 @@ def stripe_checkout(request, appointment_id):
 
 def payment_success(request, appointment_id):
     """Handle successful Stripe payment"""
+    session_id = request.GET.get('session_id')
+
+    if not session_id:
+        messages.error(request, "Missing session ID.")
+        return redirect('confirmation', appointment_id=appointment_id)
     try:
         appointment = Appointment.objects.get(id=appointment_id)
-        
         if appointment.payment_status == 'pending':
+            appointment.stripe_payment_intent_id = stripe.checkout.Session.retrieve(session_id).payment_intent
             appointment.payment_status = 'paid'
             appointment.status = 'confirmed'
             appointment.save()
@@ -111,7 +116,7 @@ def booking_confirmation(request, appointment_id):
     
     if not session_appointment_id or int(session_appointment_id) != int(appointment_id):
         messages.error(request, 'You do not have permission to view this page.')
-        return redirect('booking')
+        raise Http404("You do not have permission to view this page.")
     try:
         appointment = Appointment.objects.get(id=appointment_id)
         del request.session['appointment_id']
