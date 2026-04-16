@@ -46,7 +46,7 @@ class AddOns(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name + ' - ' + str(self.price)
+        return self.name + ' - $' + str(self.price)
     
     def save(self, *args, **kwargs):
         from .utils import getStripePrice
