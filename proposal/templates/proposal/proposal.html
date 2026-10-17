@@ -219,7 +219,7 @@
 
         <section class="slide active" data-step="name">
             <div class="big-heart">💌</div>
-            <h1>Hi there</h1>
+            <h1>Hey baby</h1>
             <p>This is for one very special person. Prove it's you 😌</p>
             <form id="nameForm" autocomplete="off">
                 <input type="text" id="firstName" placeholder="First name" required>
@@ -482,20 +482,31 @@
 
         yesBtn.addEventListener('click', () => {
             noBtn.remove();
-            post(`${BASE}answer`, { answer: 'yes', no_attempts: noAttempts }).catch(() => {});
-
             const gallery = document.getElementById('heartGallery');
-            unlockedImages.forEach((src, i) => {
-                const frame = document.createElement('div');
-                frame.className = 'heart-photo';
-                frame.style.setProperty('--tilt', (i % 2 ? 6 : -6) + 'deg');
-                frame.style.animationDelay = `${0.6 + i * 0.35}s, ${i * 0.4}s`;
-                const photo = document.createElement('img');
-                photo.src = src;
-                photo.alt = '';
-                frame.append(photo);
-                gallery.append(frame);
-            });
+            let shown = 0;
+            function addHeartPhotos(sources, startDelay) {
+                sources.forEach((src, i) => {
+                    const n = shown++;
+                    const frame = document.createElement('div');
+                    frame.className = 'heart-photo';
+                    frame.style.setProperty('--tilt', (n % 2 ? 6 : -6) + 'deg');
+                    frame.style.animationDelay = `${startDelay + i * 0.35}s, ${n * 0.4}s`;
+                    const photo = document.createElement('img');
+                    photo.src = src;
+                    photo.alt = '';
+                    frame.append(photo);
+                    gallery.append(frame);
+                });
+            }
+            addHeartPhotos(unlockedImages, 0.6);
+
+            // extra photos only come from the server once she says yes, then keep popping in after the others
+            const extrasStart = Date.now();
+            post(`${BASE}answer`, { answer: 'yes', no_attempts: noAttempts }).then(res => {
+                const elapsed = (Date.now() - extrasStart) / 1000;
+                const extras = (res.photos || []).filter(src => !unlockedImages.includes(src));
+                addHeartPhotos(extras, Math.max(0, 0.6 + unlockedImages.length * 0.35 - elapsed));
+            }).catch(() => {});
 
             goTo('celebrate');
             const end = Date.now() + 4000;

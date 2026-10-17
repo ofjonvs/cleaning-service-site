@@ -31,6 +31,17 @@ class Question(models.Model):
         return [a.strip() for a in self.answers.split('|') if a.strip()]
 
 
+class FinalPhoto(models.Model):
+    image = CloudinaryField('image', folder='proposal/final/')
+    order = models.PositiveIntegerField(default=0, help_text="Shown after the question pictures, lowest first")
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f'final photo {self.pk}'
+
+
 class Response(models.Model):
     answer = models.CharField(max_length=10)
     no_attempts = models.PositiveIntegerField(default=0, help_text="How many times she chased the 'no' button")

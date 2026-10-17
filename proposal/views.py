@@ -3,7 +3,7 @@ import unicodedata
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
-from .models import Question, Response
+from .models import Question, FinalPhoto, Response
 
 # The name she has to enter on the first slide (case, accents and extra spaces are ignored).
 FIRST_NAME = 'Celia'
@@ -68,4 +68,7 @@ def final_answer(request):
     except (TypeError, ValueError):
         no_attempts = 0
     Response.objects.create(answer=str(data.get('answer', 'yes'))[:10], no_attempts=no_attempts)
-    return JsonResponse({'ok': True})
+    return JsonResponse({
+        'ok': True,
+        'photos': [p.image.build_url(secure=True) for p in FinalPhoto.objects.all()],
+    })
