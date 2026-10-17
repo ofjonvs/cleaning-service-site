@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For you 💌</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pink: #ff4d8d;
+            --pink-dark: #e0336f;
+            --rose: #ffd6e4;
+            --ink: #4a2338;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            color: var(--ink);
+            background: linear-gradient(135deg, #ffdde8, #ffc2d6 45%, #f9b8e0);
+            background-size: 200% 200%;
+            animation: bgShift 12s ease-in-out infinite;
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        @keyframes bgShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* floating hearts in the background */
+        #hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+        .heart {
+            position: absolute;
+            bottom: -40px;
+            animation: floatUp linear forwards;
+            opacity: .7;
+        }
+        @keyframes floatUp {
+            to { transform: translateY(-110vh) rotate(25deg); opacity: 0; }
+        }
+
+        .card {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+            min-height: 420px;
+            background: rgba(255, 255, 255, .85);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(224, 51, 111, .25);
+            padding: 36px 28px 28px;
+            overflow: hidden;
+        }
+        .card.shake { animation: shake .45s; }
+        @keyframes shake {
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .progress { display: flex; gap: 8px; justify-content: center; margin-bottom: 22px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--rose); transition: all .4s; }
+        .dot.done { background: var(--pink); }
+        .dot.current { background: var(--pink); transform: scale(1.4); box-shadow: 0 0 0 4px rgba(255, 77, 141, .2); }
+
+        .slide { display: none; text-align: center; }
+        .slide.active { display: block; animation: slideIn .6s cubic-bezier(.2, .8, .2, 1); }
+        .slide.leaving { display: block; animation: slideOut .4s ease-in forwards; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(60px) scale(.96); }
+            to { opacity: 1; transform: none; }
+        }
+        @keyframes slideOut {
+            to { opacity: 0; transform: translateX(-60px) scale(.96); }
+        }
+
+        h1, h2 { font-family: 'Pacifico', cursive; font-weight: 400; color: var(--pink-dark); margin: 0 0 12px; }
+        h1 { font-size: 2.2rem; }
+        h2 { font-size: 1.6rem; line-height: 1.4; }
+        p { margin: 0 0 18px; font-size: 1.05rem; }
+        .eyebrow { text-transform: uppercase; letter-spacing: .15em; font-size: .8rem; font-weight: 700; color: var(--pink); margin-bottom: 8px; }
+
+        input[type=text] {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            border: 2px solid var(--rose);
+            border-radius: 14px;
+            font: inherit;
+            font-size: 1.05rem;
+            color: var(--ink);
+            background: #fff;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        input[type=text]:focus { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(255, 77, 141, .15); }
+
+        .btn {
+            display: inline-block;
+            border: none;
+            border-radius: 999px;
+            padding: 13px 30px;
+            font: inherit;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            color: #fff;
+            background: var(--pink);
+            box-shadow: 0 6px 18px rgba(255, 77, 141, .35);
+            transition: transform .15s, background .2s, box-shadow .2s;
+        }
+        .btn:hover { background: var(--pink-dark); transform: translateY(-2px); }
+        .btn:active { transform: scale(.97); }
+        .btn:disabled { opacity: .6; cursor: default; transform: none; }
+        .btn.ghost { background: #fff; color: var(--pink-dark); box-shadow: 0 4px 14px rgba(0, 0, 0, .08); }
+
+        .choices { display: grid; gap: 10px; margin-bottom: 8px; }
+        .choices .btn { width: 100%; }
+
+        .feedback { min-height: 1.5em; margin-top: 12px; font-weight: 600; color: var(--pink-dark); }
+
+        .reveal { display: none; }
+        .reveal.show { display: block; animation: pop .7s cubic-bezier(.2, 1.4, .4, 1); }
+        @keyframes pop {
+            from { opacity: 0; transform: scale(.6) rotate(-4deg); }
+            to { opacity: 1; transform: none; }
+        }
+        .reveal img {
+            width: 100%;
+            max-height: 340px;
+            object-fit: cover;
+            border-radius: 18px;
+            border: 6px solid #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+            transform: rotate(-2deg);
+            margin-bottom: 14px;
+        }
+        .reveal .yay { font-family: 'Pacifico', cursive; font-size: 1.5rem; color: var(--pink); margin-bottom: 6px; }
+
+        .final-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            min-height: 120px;
+        }
+        #yesBtn { font-size: 1.3rem; padding: 16px 44px; transition: transform .3s; }
+        #noBtn { font-size: 1.1rem; }
+        #noBtn.fleeing {
+            position: fixed;
+            z-index: 10;
+            transition: left .35s cubic-bezier(.2, .8, .2, 1), top .35s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        /* heart-shaped photos on the celebration slide */
+        .heart-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px 10px;
+            margin: 8px 0 18px;
+        }
+        .heart-photo {
+            position: relative;
+            width: 120px;
+            height: 110px;
+            opacity: 0;
+            filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 6px 14px rgba(255, 77, 141, .55));
+            animation: heartIn .8s cubic-bezier(.2, 1.5, .4, 1) forwards, bob 3s ease-in-out infinite;
+        }
+        .heart-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'%3E%3Cpath d='M50 92 C20 70 0 52 0 28 C0 12 12 0 27 0 C37 0 45 5 50 13 C55 5 63 0 73 0 C88 0 100 12 100 28 C100 52 80 70 50 92Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'%3E%3Cpath d='M50 92 C20 70 0 52 0 28 C0 12 12 0 27 0 C37 0 45 5 50 13 C55 5 63 0 73 0 C88 0 100 12 100 28 C100 52 80 70 50 92Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+        }
+        .heart-photo::before, .heart-photo::after {
+            content: '💕';
+            position: absolute;
+            font-size: 1.1rem;
+            animation: twinkle 1.6s ease-in-out infinite;
+        }
+        .heart-photo::before { top: -8px; left: -6px; }
+        .heart-photo::after { content: '💗'; bottom: 4px; right: -8px; animation-delay: .8s; }
+        @keyframes heartIn {
+            from { opacity: 0; transform: scale(0) rotate(-20deg); }
+            to { opacity: 1; transform: scale(1) rotate(var(--tilt, 0deg)); }
+        }
+        @keyframes bob {
+            0%, 100% { translate: 0 0; }
+            50% { translate: 0 -8px; }
+        }
+        @keyframes twinkle {
+            0%, 100% { transform: scale(.8); opacity: .6; }
+            50% { transform: scale(1.25); opacity: 1; }
+        }
+
+        .big-heart { font-size: 5rem; display: inline-block; animation: beat 1s ease-in-out infinite; }
+        @keyframes beat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.25); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+        }
+    </style>
+</head>
+<body>
+    <div id="hearts"></div>
+
+    <div class="card" id="card">
+        <div class="progress" id="progress"></div>
+
+        <section class="slide active" data-step="name">
+            <div class="big-heart">💌</div>
+            <h1>Hi there</h1>
+            <p>This is for one very special person. Prove it's you 😌</p>
+            <form id="nameForm" autocomplete="off">
+                <input type="text" id="firstName" placeholder="First name" required>
+                <input type="text" id="lastName" placeholder="Last name" required>
+                <button class="btn" type="submit">That's me</button>
+            </form>
+            <div class="feedback" id="nameFeedback"></div>
+        </section>
+
+        <div id="questionSlides"></div>
+
+        <section class="slide" data-step="final">
+            <div class="big-heart">💖</div>
+            <h2>You got every single one right... so I have one last question.</h2>
+            <h1 style="margin-top: 16px;">Will you be my girlfriend, again?</h1>
+            <div class="final-buttons">
+                <button class="btn" id="yesBtn" type="button">Yes</button>
+                <button class="btn ghost" id="noBtn" type="button">No</button>
+            </div>
+        </section>
+
+        <section class="slide" data-step="celebrate">
+            <div class="big-heart">💓</div>
+            <h1>I love you so much baby 😘</h1>
+            <div class="heart-gallery" id="heartGallery"></div>
+            <p>My love, my world, my everything. I can't wait for all the new moments we create ❤️</p>
+        </section>
+    </div>
+
+    {% csrf_token %}
+    {{ questions|json_script:"questions-data" }}
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script>
+        const questions = JSON.parse(document.getElementById('questions-data').textContent);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const card = document.getElementById('card');
+        const BASE = '{% url "proposal" %}';
+        const unlockedImages = [];
+
+        function post(url, body) {
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify(body),
+            }).then(r => r.json());
+        }
+
+        function shake() {
+            card.classList.remove('shake');
+            void card.offsetWidth;
+            card.classList.add('shake');
+        }
+
+        function burst(opts = {}) {
+            if (window.confetti) confetti(Object.assign({ particleCount: 80, spread: 70, origin: { y: .6 } }, opts));
+        }
+
+        /* ---------- floating hearts ---------- */
+        const heartChars = ['❤️', '💕', '💖', '💗', '💘', '🌸'];
+        function spawnHeart() {
+            const h = document.createElement('span');
+            h.className = 'heart';
+            h.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
+            h.style.left = Math.random() * 100 + 'vw';
+            h.style.fontSize = 14 + Math.random() * 22 + 'px';
+            h.style.animationDuration = 7 + Math.random() * 7 + 's';
+            document.getElementById('hearts').appendChild(h);
+            setTimeout(() => h.remove(), 15000);
+        }
+        setInterval(spawnHeart, 700);
+
+        /* ---------- build question slides ---------- */
+        const questionSlides = document.getElementById('questionSlides');
+        questions.forEach((q, i) => {
+            const slide = document.createElement('section');
+            slide.className = 'slide';
+            slide.dataset.step = 'q' + i;
+
+            const eyebrow = document.createElement('div');
+            eyebrow.className = 'eyebrow';
+            eyebrow.textContent = `Question ${i + 1} of ${questions.length}`;
+            const h2 = document.createElement('h2');
+            h2.textContent = q.prompt;
+
+            const ask = document.createElement('div');
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback';
+
+            const reveal = document.createElement('div');
+            reveal.className = 'reveal';
+            const yay = document.createElement('div');
+            yay.className = 'yay';
+            yay.textContent = ['Correct! 🎉', 'You know me so well 🥹', 'Perfect 😍', 'Obviously 😌'][i % 5];
+            const img = document.createElement('img');
+            img.alt = '';
+            const caption = document.createElement('p');
+            const next = document.createElement('button');
+            next.className = 'btn';
+            next.type = 'button';
+            next.textContent = i === questions.length - 1 ? 'One last thing... 💌' : 'Next →';
+            next.addEventListener('click', () => goTo(i === questions.length - 1 ? 'final' : 'q' + (i + 1)));
+            reveal.append(yay, img, caption, next);
+
+            function submit(answer, buttons) {
+                buttons.forEach(b => b.disabled = true);
+                post(`${BASE}question/${q.id}`, { answer }).then(res => {
+                    buttons.forEach(b => b.disabled = false);
+                    if (!res.ok) {
+                        feedback.textContent = res.hint || 'Nope! Try again 😜';
+                        shake();
+                        return;
+                    }
+                    ask.style.display = 'none';
+                    feedback.textContent = '';
+                    caption.textContent = res.caption || '';
+                    if (res.image) {
+                        img.src = res.image;
+                        if (!unlockedImages.includes(res.image)) unlockedImages.push(res.image);
+                    } else {
+                        img.remove();
+                    }
+                    reveal.classList.add('show');
+                    burst({ particleCount: 60, colors: ['#ff4d8d', '#ffd6e4', '#ffffff'] });
+                }).catch(() => {
+                    buttons.forEach(b => b.disabled = false);
+                    feedback.textContent = 'Something went wrong, try again';
+                });
+            }
+
+            if (q.choices.length) {
+                const choices = document.createElement('div');
+                choices.className = 'choices';
+                const buttons = q.choices.map(c => {
+                    const b = document.createElement('button');
+                    b.className = 'btn ghost';
+                    b.type = 'button';
+                    b.textContent = c;
+                    return b;
+                });
+                buttons.forEach(b => b.addEventListener('click', () => submit(b.textContent, buttons)));
+                choices.append(...buttons);
+                ask.append(choices);
+            } else {
+                const form = document.createElement('form');
+                form.autocomplete = 'off';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = 'Your answer';
+                input.required = true;
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.type = 'submit';
+                btn.textContent = 'Submit';
+                form.append(input, btn);
+                form.addEventListener('submit', e => { e.preventDefault(); submit(input.value, [btn]); });
+                ask.append(form);
+            }
+
+            slide.append(eyebrow, h2, ask, feedback, reveal);
+            questionSlides.append(slide);
+        });
+
+        /* ---------- slide navigation ---------- */
+        const steps = ['name', ...questions.map((_, i) => 'q' + i), 'final'];
+        const progress = document.getElementById('progress');
+        steps.forEach(() => {
+            const d = document.createElement('span');
+            d.className = 'dot';
+            progress.append(d);
+        });
+
+        function updateProgress(step) {
+            const idx = steps.indexOf(step);
+            [...progress.children].forEach((d, i) => {
+                d.className = 'dot' + (i < idx || idx === -1 ? ' done' : i === idx ? ' current' : '');
+            });
+        }
+        updateProgress('name');
+
+        function goTo(step) {
+            const current = document.querySelector('.slide.active');
+            const next = document.querySelector(`.slide[data-step="${step}"]`);
+            current.classList.remove('active');
+            current.classList.add('leaving');
+            setTimeout(() => {
+                current.classList.remove('leaving');
+                next.classList.add('active');
+                updateProgress(step);
+                const input = next.querySelector('input');
+                if (input) input.focus();
+            }, 400);
+        }
+
+        /* ---------- name check ---------- */
+        document.getElementById('nameForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const feedback = document.getElementById('nameFeedback');
+            post(`${BASE}name`, {
+                first: document.getElementById('firstName').value,
+                last: document.getElementById('lastName').value,
+            }).then(res => {
+                if (res.ok) {
+                    feedback.textContent = 'Hiii 🥰';
+                    burst({ particleCount: 40 });
+                    setTimeout(() => goTo(steps[1]), 700);
+                } else {
+                    feedback.textContent = "Hmm... you're not who I'm looking for 🤨";
+                    shake();
+                }
+            });
+        });
+
+        /* ---------- the runaway "no" button ---------- */
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const noTexts = ['No', 'Are you sure?', 'Really??', 'Think again 😏', 'Nice try', 'Nope 🙅‍♀️', "Can't catch me", 'Just click yes ❤️'];
+        let noAttempts = 0;
+        let lastMove = 0;
+
+        function flee(pointerX, pointerY) {
+            const now = Date.now();
+            if (now - lastMove < 150) return;
+            lastMove = now;
+
+            if (!noBtn.classList.contains('fleeing')) {
+                // move it to <body> so position: fixed is relative to the viewport, not the animated card
+                const rect = noBtn.getBoundingClientRect();
+                document.body.append(noBtn);
+                noBtn.style.left = rect.left + 'px';
+                noBtn.style.top = rect.top + 'px';
+                noBtn.classList.add('fleeing');
+                void noBtn.offsetWidth;
+            }
+
+            noAttempts++;
+            noBtn.textContent = noTexts[noAttempts % noTexts.length];
+            yesBtn.style.transform = `scale(${Math.min(1 + noAttempts * 0.08, 1.8)})`;
+
+            const w = noBtn.offsetWidth, h = noBtn.offsetHeight, margin = 16;
+            let x, y, tries = 0;
+            do {
+                x = margin + Math.random() * (window.innerWidth - w - margin * 2);
+                y = margin + Math.random() * (window.innerHeight - h - margin * 2);
+                tries++;
+            } while (tries < 20 && Math.hypot(x + w / 2 - pointerX, y + h / 2 - pointerY) < 200);
+            noBtn.style.left = x + 'px';
+            noBtn.style.top = y + 'px';
+        }
+
+        document.addEventListener('mousemove', e => {
+            if (!document.querySelector('.slide[data-step="final"].active')) return;
+            const r = noBtn.getBoundingClientRect();
+            const dist = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
+            if (dist < Math.max(r.width, r.height) / 2 + 70) flee(e.clientX, e.clientY);
+        });
+        // phones / taps / keyboard: it runs away instead of registering
+        noBtn.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; flee(t.clientX, t.clientY); }, { passive: false });
+        noBtn.addEventListener('click', e => { e.preventDefault(); lastMove = 0; flee(e.clientX, e.clientY); });
+
+        yesBtn.addEventListener('click', () => {
+            noBtn.remove();
+            post(`${BASE}answer`, { answer: 'yes', no_attempts: noAttempts }).catch(() => {});
+
+            const gallery = document.getElementById('heartGallery');
+            unlockedImages.forEach((src, i) => {
+                const frame = document.createElement('div');
+                frame.className = 'heart-photo';
+                frame.style.setProperty('--tilt', (i % 2 ? 6 : -6) + 'deg');
+                frame.style.animationDelay = `${0.6 + i * 0.35}s, ${i * 0.4}s`;
+                const photo = document.createElement('img');
+                photo.src = src;
+                photo.alt = '';
+                frame.append(photo);
+                gallery.append(frame);
+            });
+
+            goTo('celebrate');
+            const end = Date.now() + 4000;
+            (function frame() {
+                burst({ particleCount: 6, angle: 60, spread: 60, origin: { x: 0, y: .7 }, colors: ['#ff4d8d', '#ff9ec4', '#ffffff'] });
+                burst({ particleCount: 6, angle: 120, spread: 60, origin: { x: 1, y: .7 }, colors: ['#ff4d8d', '#ff9ec4', '#ffffff'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            })();
+            setTimeout(() => burst({ particleCount: 200, spread: 120, origin: { y: .5 } }), 500);
+            for (let i = 0; i < 40; i++) setTimeout(spawnHeart, i * 60);
+        });
+    </script>
+</body>
+</html>

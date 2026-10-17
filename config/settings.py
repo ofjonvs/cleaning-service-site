@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
     "home",
     "booking",
+    "proposal",
 ]
 
 # CLOUDINARY_STORAGE = {
